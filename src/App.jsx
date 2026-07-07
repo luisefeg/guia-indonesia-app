@@ -634,7 +634,7 @@ function TabTickets({ tickets, setTickets }) {
   const [filter, setFilter] = useState("todos");
   const lastOrderRef = useRef([]);
   const update = (id, patch) => setTickets(tickets.map((t) => (t.id === id ? { ...t, ...patch } : t)));
-  const remove = (id) => { setTickets(tickets.filter((t) => t.id !== id)); setEditId(null); };
+  const remove = (id) => { if (!window.confirm("¿Seguro que quieres eliminar este ticket? No se puede deshacer.")) return; setTickets(tickets.filter((t) => t.id !== id)); setEditId(null); };
   const add = (mode) => { const t = { id: uid(), mode, op: mode === "entrada" ? "Nueva entrada" : "Nuevo billete", from: "", to: "", date: "", time: "", code: "", note: "", group: "todos", status: "pendiente", files: [] }; setTickets([...tickets, t]); setEditId(t.id); setFilter("todos"); };
 
   const dates = useMemo(() => {
@@ -738,7 +738,7 @@ function TabHoteles({ hotels, setHotels }) {
   const [editId, setEditId] = useState(null);
   const lastOrderRef = useRef([]);
   const update = (id, patch) => setHotels(hotels.map((h) => (h.id === id ? { ...h, ...patch } : h)));
-  const remove = (id) => { setHotels(hotels.filter((h) => h.id !== id)); setEditId(null); };
+  const remove = (id) => { if (!window.confirm("¿Seguro que quieres eliminar este hotel? No se puede deshacer.")) return; setHotels(hotels.filter((h) => h.id !== id)); setEditId(null); };
   const add = () => { const h = { id: uid(), name: "", place: "", checkin: "", checkout: "", location: "", note: "" }; setHotels([...hotels, h]); setEditId(h.id); };
 
   const shown = useMemo(() => {
