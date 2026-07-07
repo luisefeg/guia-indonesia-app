@@ -3,7 +3,7 @@ import {
   Home, CalendarDays, Ticket, MapPin, MessagesSquare, Plane, Train, Ship, Bus, Landmark,
   Plus, Trash2, Check, Pencil, ChevronDown, RefreshCw, Users, Moon,
   Sunrise, ExternalLink, X, Paperclip, FileText, Image as ImageIcon, Loader2,
-  Lightbulb, Send, Navigation, Mic, Square
+  Lightbulb, Send, Navigation, Mic, Square, Hotel
 } from "lucide-react";
 import bg from "./assets/bg.jpg";
 import { supabase } from "./supabase";
@@ -23,20 +23,22 @@ const AUTHORS = [
 ];
 
 const TICKETS_DEFAULT = [
-  { id: "t1", mode: "plane", op: "Saudia", from: "Madrid (MAD)", to: "Jeddah (JED)", date: "28 jul", time: "16:40", note: "Aerolínea por confirmar", group: "todos", status: "confirmado", files: [] },
-  { id: "t2", mode: "plane", op: "Saudia", from: "Jeddah (JED)", to: "Yakarta (CGK)", date: "29 jul", time: "01:55", note: "Escala", group: "todos", status: "confirmado", files: [] },
-  { id: "t3", mode: "train", op: "Argo Dwipangga 16 · Ejecutiva", from: "Gambir (GMR)", to: "Yogyakarta (YK)", date: "30 jul", time: "08:50", code: "RTM9M7L", note: "", group: "todos", status: "confirmado", files: [] },
-  { id: "t4", mode: "plane", op: "Vuelo interno", from: "Yogyakarta (YIA)", to: "Denpasar (DPS)", date: "1 ago", time: "", code: "", note: "Por reservar", group: "A", status: "pendiente", files: [] },
-  { id: "t5", mode: "train", op: "Sancaka 86B · Ejecutiva", from: "Yogyakarta (YK)", to: "Surabaya Gubeng (SGU)", date: "1 ago", time: "17:00", code: "93X9OXR", note: "", group: "B", status: "confirmado", files: [] },
-  { id: "t6", mode: "plane", op: "Citilink", from: "Surabaya (SUB)", to: "Denpasar (DPS)", date: "2 ago", time: "16:45", code: "", note: "151 € · 3 pax · directo", group: "B", status: "confirmado", files: [] },
-  { id: "t7", mode: "ferry", op: "Ferry rápido", from: "Sanur (Bali)", to: "Nusa Penida", date: "6 ago", time: "", code: "", note: "Por reservar", group: "todos", status: "pendiente", files: [] },
-  { id: "t8", mode: "ferry", op: "Ferry rápido", from: "Nusa Penida", to: "Gili Air", date: "8 ago", time: "", code: "", note: "Por reservar", group: "todos", status: "pendiente", files: [] },
-  { id: "t9", mode: "ferry", op: "Ferry rápido", from: "Gili Air", to: "Bali (Uluwatu)", date: "10 ago", time: "", code: "", note: "Por reservar", group: "todos", status: "pendiente", files: [] },
-  { id: "t10", mode: "plane", op: "AirAsia QZ-801", from: "Denpasar (DPS)", to: "Yakarta (CGK)", date: "11 ago", time: "20:00", code: "D8FJ7F", note: "Traveloka 1349741448 · reembolsable", group: "todos", status: "confirmado", files: [] },
-  { id: "t11", mode: "plane", op: "Saudia", from: "Yakarta (CGK)", to: "Madinah (MED)", date: "12 ago", time: "12:00", code: "", note: "Escala", group: "todos", status: "confirmado", files: [] },
-  { id: "t12", mode: "plane", op: "Saudia", from: "Madinah (MED)", to: "Jeddah (JED)", date: "12 ago", time: "22:20", code: "", note: "Escala", group: "todos", status: "confirmado", files: [] },
-  { id: "t13", mode: "plane", op: "Saudia", from: "Jeddah (JED)", to: "Madrid (MAD)", date: "13 ago", time: "08:10", code: "", note: "Llegada", group: "todos", status: "confirmado", files: [] },
+  { id: "t1", mode: "plane", op: "Saudia", from: "Madrid (MAD)", to: "Jeddah (JED)", date: "2026-07-28", time: "16:40", note: "Aerolínea por confirmar", group: "todos", status: "confirmado", files: [] },
+  { id: "t2", mode: "plane", op: "Saudia", from: "Jeddah (JED)", to: "Yakarta (CGK)", date: "2026-07-29", time: "01:55", note: "Escala", group: "todos", status: "confirmado", files: [] },
+  { id: "t3", mode: "train", op: "Argo Dwipangga 16 · Ejecutiva", from: "Gambir (GMR)", to: "Yogyakarta (YK)", date: "2026-07-30", time: "08:50", code: "RTM9M7L", note: "", group: "todos", status: "confirmado", files: [] },
+  { id: "t4", mode: "plane", op: "Vuelo interno", from: "Yogyakarta (YIA)", to: "Denpasar (DPS)", date: "2026-08-01", time: "", code: "", note: "Por reservar", group: "A", status: "pendiente", files: [] },
+  { id: "t5", mode: "train", op: "Sancaka 86B · Ejecutiva", from: "Yogyakarta (YK)", to: "Surabaya Gubeng (SGU)", date: "2026-08-01", time: "17:00", code: "93X9OXR", note: "", group: "B", status: "confirmado", files: [] },
+  { id: "t6", mode: "plane", op: "Citilink", from: "Surabaya (SUB)", to: "Denpasar (DPS)", date: "2026-08-02", time: "16:45", code: "", note: "151 € · 3 pax · directo", group: "B", status: "confirmado", files: [] },
+  { id: "t7", mode: "ferry", op: "Ferry rápido", from: "Sanur (Bali)", to: "Nusa Penida", date: "2026-08-06", time: "", code: "", note: "Por reservar", group: "todos", status: "pendiente", files: [] },
+  { id: "t8", mode: "ferry", op: "Ferry rápido", from: "Nusa Penida", to: "Gili Air", date: "2026-08-08", time: "", code: "", note: "Por reservar", group: "todos", status: "pendiente", files: [] },
+  { id: "t9", mode: "ferry", op: "Ferry rápido", from: "Gili Air", to: "Bali (Uluwatu)", date: "2026-08-10", time: "", code: "", note: "Por reservar", group: "todos", status: "pendiente", files: [] },
+  { id: "t10", mode: "plane", op: "AirAsia QZ-801", from: "Denpasar (DPS)", to: "Yakarta (CGK)", date: "2026-08-11", time: "20:00", code: "D8FJ7F", note: "Traveloka 1349741448 · reembolsable", group: "todos", status: "confirmado", files: [] },
+  { id: "t11", mode: "plane", op: "Saudia", from: "Yakarta (CGK)", to: "Madinah (MED)", date: "2026-08-12", time: "12:00", code: "", note: "Escala", group: "todos", status: "confirmado", files: [] },
+  { id: "t12", mode: "plane", op: "Saudia", from: "Madinah (MED)", to: "Jeddah (JED)", date: "2026-08-12", time: "22:20", code: "", note: "Escala", group: "todos", status: "confirmado", files: [] },
+  { id: "t13", mode: "plane", op: "Saudia", from: "Jeddah (JED)", to: "Madrid (MAD)", date: "2026-08-13", time: "08:10", code: "", note: "Llegada", group: "todos", status: "confirmado", files: [] },
 ];
+
+const HOTELS_DEFAULT = [];
 
 const STOPS_DEFAULT = [
   { id: "jkt1", name: "Yakarta", region: "Java", nights: "1 noche", dates: "29 jul", pois: [] },
@@ -86,10 +88,29 @@ function tripDate(i) { const d = new Date(2026, 6, 28); d.setDate(d.getDate() + 
 function todayIndex() { const t = new Date(); const today = new Date(t.getFullYear(), t.getMonth(), t.getDate()); return Math.round((today - TRIP_START) / 86400000); }
 
 const MONTHS = { ene: 0, feb: 1, mar: 2, abr: 3, may: 4, jun: 5, jul: 6, ago: 7, sep: 8, oct: 9, nov: 10, dic: 11 };
-function parseDMY(s) { const m = (s || "").toLowerCase().match(/(\d{1,2})\s*([a-z]{3})/); return m ? { d: +m[1], mo: (MONTHS[m[2]] ?? 99) } : null; }
+const MONTHS_ES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+function ymd(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+function fmtShortDate(iso) {
+  if (!iso) return "";
+  const parts = iso.split("-");
+  if (parts.length !== 3) return iso;
+  const [y, m, d] = parts.map(Number);
+  if (!y || !m || !d) return iso;
+  return `${d} ${MONTHS_ES[m - 1] || ""}`.trim();
+}
+function nightsBetween(a, b) {
+  if (!a || !b) return "";
+  const d1 = new Date(a + "T00:00:00"); const d2 = new Date(b + "T00:00:00");
+  const diff = Math.round((d2 - d1) / 86400000);
+  if (!Number.isFinite(diff) || diff <= 0) return "";
+  return diff === 1 ? "1 noche" : `${diff} noches`;
+}
+function ticketSortKey(t) {
+  const d = t.date || "9999-99-99";
+  const tm = (t.time && /^\d{1,2}:\d{2}$/.test(t.time)) ? t.time.padStart(5, "0") : "99:99";
+  return `${d} ${tm}`;
+}
 function parseMin(s) { const m = (s || "").match(/(\d{1,2}):(\d{2})/); return m ? (+m[1]) * 60 + (+m[2]) : 9999; }
-function ticketSortKey(t) { const p = parseDMY(t.date) || { mo: 99, d: 99 }; return p.mo * 1e5 + p.d * 1e3 + parseMin(t.time); }
-function sameDay(a, b) { const x = parseDMY(a), y = parseDMY(b); return x && y && x.d === y.d && x.mo === y.mo; }
 
 /* ============================================================
    ALMACENAMIENTO COMPARTIDO (Supabase)
@@ -171,19 +192,32 @@ export default function GuiaIndonesia() {
   const [stops, setStops] = useState(STOPS_DEFAULT);
   const [agenda, setAgenda] = useState({});
   const [notas, setNotas] = useState([]);
+  const [hotels, setHotels] = useState(HOTELS_DEFAULT);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
-    const [t, s, a, n] = await Promise.all([
+    const [t, s, a, n, h] = await Promise.all([
       kvGet("tickets", TICKETS_DEFAULT),
       kvGet("stops", STOPS_DEFAULT),
       kvGet("agenda", {}),
       kvGet("notas", []),
+      kvGet("hotels", HOTELS_DEFAULT),
     ]);
-    setTickets(t); setStops(s); setAgenda(a); setNotas(n);
+    setTickets(t); setStops(s); setAgenda(a); setNotas(n); setHotels(h);
     setLoading(false);
   }, []);
   useEffect(() => { loadAll(); }, [loadAll]);
+
+  // lastWrite guarda cuándo escribiste tú por última vez cada sección.
+  // Mientras estés escribiendo (o justo después), ignoramos el eco de nuestra
+  // propia escritura que llega por tiempo real, para que no te "borre" letras.
+  const lastWriteRef = useRef({ tickets: 0, stops: 0, agenda: 0, notas: 0, hotels: 0 });
+  const debounceRef = useRef({});
+  const debouncedKvSet = useCallback((key, value, delay = 500) => {
+    lastWriteRef.current[key] = Date.now();
+    if (debounceRef.current[key]) clearTimeout(debounceRef.current[key]);
+    debounceRef.current[key] = setTimeout(() => { kvSet(key, value); }, delay);
+  }, []);
 
   // Cuando otro amigo cambia algo desde su móvil, esta suscripción lo trae solo,
   // sin necesidad de tocar "Actualizar".
@@ -193,26 +227,31 @@ export default function GuiaIndonesia() {
       .on("postgres_changes", { event: "*", schema: "public", table: "guia_kv" }, (payload) => {
         const row = payload.new && Object.keys(payload.new).length ? payload.new : payload.old;
         if (!row) return;
-        if (row.key === "tickets") setTickets(payload.new ? payload.new.value : TICKETS_DEFAULT);
-        if (row.key === "stops") setStops(payload.new ? payload.new.value : STOPS_DEFAULT);
-        if (row.key === "agenda") setAgenda(payload.new ? payload.new.value : {});
-        if (row.key === "notas") setNotas(payload.new ? payload.new.value : []);
+        const key = row.key;
+        if (Date.now() - (lastWriteRef.current[key] || 0) < 1200) return; // muy probablemente es nuestro propio cambio
+        if (key === "tickets") setTickets(payload.new ? payload.new.value : TICKETS_DEFAULT);
+        if (key === "stops") setStops(payload.new ? payload.new.value : STOPS_DEFAULT);
+        if (key === "agenda") setAgenda(payload.new ? payload.new.value : {});
+        if (key === "notas") setNotas(payload.new ? payload.new.value : []);
+        if (key === "hotels") setHotels(payload.new ? payload.new.value : HOTELS_DEFAULT);
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, []);
 
   const persist = {
-    tickets: (v) => { setTickets(v); kvSet("tickets", v); },
-    stops: (v) => { setStops(v); kvSet("stops", v); },
-    agenda: (v) => { setAgenda(v); kvSet("agenda", v); },
-    notas: (v) => { setNotas(v); kvSet("notas", v); },
+    tickets: (v) => { setTickets(v); debouncedKvSet("tickets", v); },
+    stops: (v) => { setStops(v); debouncedKvSet("stops", v); },
+    agenda: (v) => { setAgenda(v); debouncedKvSet("agenda", v); },
+    notas: (v) => { setNotas(v); lastWriteRef.current.notas = Date.now(); kvSet("notas", v); },
+    hotels: (v) => { setHotels(v); debouncedKvSet("hotels", v); },
   };
 
   const TABS = [
     { id: "viaje", label: "Inicio", icon: Home },
     { id: "agenda", label: "Agenda", icon: CalendarDays },
     { id: "billetes", label: "Tickets", icon: Ticket },
+    { id: "hoteles", label: "Hoteles", icon: Hotel },
     { id: "sitios", label: "Sitios", icon: MapPin },
     { id: "notas", label: "Notas", icon: MessagesSquare },
   ];
@@ -231,6 +270,7 @@ export default function GuiaIndonesia() {
             {tab === "viaje" && <TabInicio agenda={agenda} tickets={tickets} onSync={loadAll} goAgenda={() => setTab("agenda")} />}
             {tab === "agenda" && <TabAgenda agenda={agenda} setAgenda={persist.agenda} />}
             {tab === "billetes" && <TabTickets tickets={tickets} setTickets={persist.tickets} />}
+            {tab === "hoteles" && <TabHoteles hotels={hotels} setHotels={persist.hotels} />}
             {tab === "sitios" && <TabSitios stops={stops} setStops={persist.stops} />}
             {tab === "notas" && <TabNotas notas={notas} setNotas={persist.notas} onSync={loadAll} />}
           </div>
@@ -289,7 +329,8 @@ function TodayCard({ agenda, tickets, goAgenda }) {
   const previewIdx = idx < 0 ? 0 : (inTrip ? idx : DAYS_DEFAULT.length - 1);
   const d = DAYS_DEFAULT[previewIdx];
   const acts = sortActs(agenda[d.id]);
-  const dayTickets = (tickets || []).filter((t) => sameDay(t.date, d.date)).sort((a, b) => parseMin(a.time) - parseMin(b.time));
+  const dIso = ymd(tripDate(previewIdx));
+  const dayTickets = (tickets || []).filter((t) => (t.date || "") === dIso).sort((a, b) => parseMin(a.time) - parseMin(b.time));
   const daysTo = -idx;
 
   return (
@@ -575,40 +616,52 @@ function FileViewer({ file, onClose }) {
 function TabTickets({ tickets, setTickets }) {
   const [editId, setEditId] = useState(null);
   const [filter, setFilter] = useState("todos");
+  const lastOrderRef = useRef([]);
   const update = (id, patch) => setTickets(tickets.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   const remove = (id) => { setTickets(tickets.filter((t) => t.id !== id)); setEditId(null); };
   const add = (mode) => { const t = { id: uid(), mode, op: mode === "entrada" ? "Nueva entrada" : "Nuevo billete", from: "", to: "", date: "", time: "", code: "", note: "", group: "todos", status: "pendiente", files: [] }; setTickets([...tickets, t]); setEditId(t.id); setFilter("todos"); };
 
   const dates = useMemo(() => {
     const ds = [...new Set(tickets.map((t) => (t.date || "").trim()).filter(Boolean))];
-    ds.sort((a, b) => { const pa = parseDMY(a) || { mo: 99, d: 99 }, pb = parseDMY(b) || { mo: 99, d: 99 }; return pa.mo * 100 + pa.d - (pb.mo * 100 + pb.d); });
+    ds.sort();
     return ds;
   }, [tickets]);
 
+  // Mientras se está editando un ticket, mantenemos el orden fijo para que la fila
+  // no salte de sitio mientras escribes (eso era lo que provocaba los tirones).
   const shown = useMemo(() => {
     const list = filter === "todos" ? tickets : tickets.filter((t) => (t.date || "").trim() === filter);
-    return [...list].sort((a, b) => ticketSortKey(a) - ticketSortKey(b));
-  }, [tickets, filter]);
+    if (editId) {
+      const byId = new Map(list.map((t) => [t.id, t]));
+      const known = lastOrderRef.current.filter((id) => byId.has(id)).map((id) => byId.get(id));
+      const extra = list.filter((t) => !lastOrderRef.current.includes(t.id));
+      return [...known, ...extra];
+    }
+    const sorted = [...list].sort((a, b) => { const ka = ticketSortKey(a), kb = ticketSortKey(b); return ka < kb ? -1 : ka > kb ? 1 : 0; });
+    lastOrderRef.current = sorted.map((t) => t.id);
+    return sorted;
+  }, [tickets, filter, editId]);
 
   return (
     <div>
       <div className="gi-pagehd"><h2 className="gi-pagehd-title">Tickets</h2><p className="gi-pagehd-sub">Billetes, entradas a templos, reservas… Filtra por día y adjunta PDFs o fotos.</p></div>
+      <div className="gi-addrow gi-addrow-top"><button className="gi-addbtn" onClick={() => add("plane")}><Plus size={16} /> Billete</button><button className="gi-addbtn" onClick={() => add("entrada")}><Plus size={16} /> Entrada</button></div>
 
       <div className="gi-tfilter">
         <button className={"gi-tchip" + (filter === "todos" ? " gi-tchip-on" : "")} onClick={() => setFilter("todos")}>Todos</button>
-        {dates.map((d) => <button key={d} className={"gi-tchip" + (filter === d ? " gi-tchip-on" : "")} onClick={() => setFilter(d)}>{d}</button>)}
+        {dates.map((d) => <button key={d} className={"gi-tchip" + (filter === d ? " gi-tchip-on" : "")} onClick={() => setFilter(d)}>{fmtShortDate(d)}</button>)}
       </div>
 
       <div className="gi-ticketlist">
         {shown.length === 0 && <div className="gi-acts-empty">No hay tickets para este día.</div>}
         {shown.map((t) => {
-          const Icon = MODE_ICON[t.mode] || Plane; const editing = editId === t.id;
+          const Icon = MODE_ICON[t.mode] || Plane; const editing = editId === t.id; const isEntrada = t.mode === "entrada";
           return (
             <div key={t.id} className={"gi-ticket" + (t.status === "pendiente" ? " gi-ticket-pend" : "")}>
               {!editing ? (
                 <>
                   <div className="gi-ticket-row">
-                    <div className="gi-ticket-side"><span className="gi-ticket-icon"><Icon size={16} /></span><span className="gi-ticket-date">{t.date}{t.time ? " · " + t.time : ""}</span></div>
+                    <div className="gi-ticket-side"><span className="gi-ticket-icon"><Icon size={16} /></span><span className="gi-ticket-date">{fmtShortDate(t.date)}{t.time ? " · " + t.time : ""}</span></div>
                     <div className="gi-ticket-main">
                       <div className="gi-ticket-route">{t.from}{t.to ? <> <span className="gi-arrow">→</span> {t.to}</> : ""}</div>
                       <div className="gi-ticket-op">{t.op}</div>
@@ -626,13 +679,17 @@ function TabTickets({ tickets, setTickets }) {
               ) : (
                 <div className="gi-ticket-edit">
                   <div className="gi-row2">
-                    <select value={t.mode} onChange={(e) => update(t.id, { mode: e.target.value })}><option value="plane">Vuelo</option><option value="train">Tren</option><option value="ferry">Ferry</option><option value="bus">Bus/Traslado</option><option value="entrada">Entrada</option></select>
+                    <select value={t.mode} onChange={(e) => { const nm = e.target.value; update(t.id, nm === "entrada" ? { mode: nm, to: "" } : { mode: nm }); }}><option value="plane">Vuelo</option><option value="train">Tren</option><option value="ferry">Ferry</option><option value="bus">Bus/Traslado</option><option value="entrada">Entrada</option></select>
                     <select value={t.group} onChange={(e) => update(t.id, { group: e.target.value })}><option value="todos">Todos</option><option value="A">Grupo A</option><option value="B">Grupo B</option></select>
                   </div>
                   <input placeholder="Operador / nombre" value={t.op} onChange={(e) => update(t.id, { op: e.target.value })} />
-                  <div className="gi-row2"><input placeholder="Origen / lugar" value={t.from} onChange={(e) => update(t.id, { from: e.target.value })} /><input placeholder="Destino" value={t.to} onChange={(e) => update(t.id, { to: e.target.value })} /></div>
+                  {isEntrada ? (
+                    <input placeholder="Lugar (ej. Templo de Borobudur)" value={t.from} onChange={(e) => update(t.id, { from: e.target.value })} />
+                  ) : (
+                    <div className="gi-row2"><input placeholder="Origen" value={t.from} onChange={(e) => update(t.id, { from: e.target.value })} /><input placeholder="Destino" value={t.to} onChange={(e) => update(t.id, { to: e.target.value })} /></div>
+                  )}
                   <div className="gi-row2">
-                    <input placeholder="Fecha (ej. 30 jul)" value={t.date} onChange={(e) => update(t.id, { date: e.target.value })} />
+                    <label className="gi-datefield"><span>Fecha</span><input type="date" value={t.date} onChange={(e) => update(t.id, { date: e.target.value })} /></label>
                     <input placeholder="Hora (ej. 09:30)" value={t.time} onChange={(e) => update(t.id, { time: e.target.value })} />
                   </div>
                   <div className="gi-row2"><input placeholder="Localizador" value={t.code} onChange={(e) => update(t.id, { code: e.target.value })} /><select value={t.status} onChange={(e) => update(t.id, { status: e.target.value })}><option value="confirmado">Confirmado</option><option value="pendiente">Por reservar</option></select></div>
@@ -644,7 +701,75 @@ function TabTickets({ tickets, setTickets }) {
           );
         })}
       </div>
-      <div className="gi-addrow"><button className="gi-addbtn" onClick={() => add("plane")}><Plus size={16} /> Billete</button><button className="gi-addbtn" onClick={() => add("entrada")}><Plus size={16} /> Entrada</button></div>
+    </div>
+  );
+}
+
+/* ============================================================
+   HOTELES
+   ============================================================ */
+
+function hotelSortKey(h) { return h.checkin || "9999-99-99"; }
+
+function TabHoteles({ hotels, setHotels }) {
+  const [editId, setEditId] = useState(null);
+  const lastOrderRef = useRef([]);
+  const update = (id, patch) => setHotels(hotels.map((h) => (h.id === id ? { ...h, ...patch } : h)));
+  const remove = (id) => { setHotels(hotels.filter((h) => h.id !== id)); setEditId(null); };
+  const add = () => { const h = { id: uid(), name: "", place: "", checkin: "", checkout: "", location: "", note: "" }; setHotels([...hotels, h]); setEditId(h.id); };
+
+  const shown = useMemo(() => {
+    if (editId) {
+      const byId = new Map(hotels.map((h) => [h.id, h]));
+      const known = lastOrderRef.current.filter((id) => byId.has(id)).map((id) => byId.get(id));
+      const extra = hotels.filter((h) => !lastOrderRef.current.includes(h.id));
+      return [...known, ...extra];
+    }
+    const sorted = [...hotels].sort((a, b) => { const ka = hotelSortKey(a), kb = hotelSortKey(b); return ka < kb ? -1 : ka > kb ? 1 : 0; });
+    lastOrderRef.current = sorted.map((h) => h.id);
+    return sorted;
+  }, [hotels, editId]);
+
+  return (
+    <div>
+      <div className="gi-pagehd"><h2 className="gi-pagehd-title">Hoteles</h2><p className="gi-pagehd-sub">Alojamientos del viaje: fechas y ubicación de cada uno.</p></div>
+      <div className="gi-addrow gi-addrow-top"><button className="gi-addbtn" onClick={add}><Plus size={16} /> Hotel</button></div>
+
+      <div className="gi-ticketlist">
+        {shown.length === 0 && <div className="gi-acts-empty">Aún no habéis añadido ningún hotel.</div>}
+        {shown.map((h) => {
+          const editing = editId === h.id;
+          const nights = nightsBetween(h.checkin, h.checkout);
+          return (
+            <div key={h.id} className="gi-ticket">
+              {!editing ? (
+                <div className="gi-ticket-row">
+                  <div className="gi-ticket-side"><span className="gi-ticket-icon"><Hotel size={16} /></span><span className="gi-ticket-date">{fmtShortDate(h.checkin)}{h.checkout ? " – " + fmtShortDate(h.checkout) : ""}</span></div>
+                  <div className="gi-ticket-main">
+                    <div className="gi-ticket-route">{h.name || "Hotel sin nombre"}</div>
+                    <div className="gi-ticket-op">{h.place}{nights ? " · " + nights : ""}</div>
+                    {h.location && <a className="gi-hotel-maps" href={mapsUrl(h.location)} target="_blank" rel="noreferrer"><MapPin size={12} /> Ver en el mapa <ExternalLink size={11} /></a>}
+                    {h.note && <div className="gi-ticket-tags"><span className="gi-ticket-note">{h.note}</span></div>}
+                  </div>
+                  <button className="gi-mini-btn" onClick={() => setEditId(h.id)}><Pencil size={15} /></button>
+                </div>
+              ) : (
+                <div className="gi-ticket-edit">
+                  <input placeholder="Nombre del hotel" value={h.name} onChange={(e) => update(h.id, { name: e.target.value })} />
+                  <input placeholder="Ciudad o isla" value={h.place} onChange={(e) => update(h.id, { place: e.target.value })} />
+                  <div className="gi-row2">
+                    <label className="gi-datefield"><span>Entrada</span><input type="date" value={h.checkin} onChange={(e) => update(h.id, { checkin: e.target.value })} /></label>
+                    <label className="gi-datefield"><span>Salida</span><input type="date" value={h.checkout} onChange={(e) => update(h.id, { checkout: e.target.value })} /></label>
+                  </div>
+                  <input placeholder="Ubicación (para abrir en Google Maps)" value={h.location} onChange={(e) => update(h.id, { location: e.target.value })} />
+                  <input placeholder="Nota (opcional)" value={h.note} onChange={(e) => update(h.id, { note: e.target.value })} />
+                  <div className="gi-edit-actions"><button className="gi-del" onClick={() => remove(h.id)}><Trash2 size={15} /> Eliminar</button><button className="gi-save" onClick={() => setEditId(null)}><Check size={15} /> Listo</button></div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -959,6 +1084,11 @@ const CSS = `
 .gi-ticket-edit input, .gi-ticket-edit select{ border:1px solid var(--line); border-radius:9px; padding:8px 10px; font-size:13px; font-family:inherit; background:rgba(255,255,255,.75); color:var(--ink); width:100%; }
 .gi-ticket-edit input:focus, .gi-ticket-edit select:focus{ outline:none; border-color:var(--amber); background:#fff; }
 .gi-row2{ display:flex; gap:7px; } .gi-row2>*{ flex:1; min-width:0; }
+.gi-datefield{ display:flex; flex-direction:column; gap:3px; font-size:10.5px; color:var(--ink-soft); font-weight:600; }
+.gi-datefield input[type="date"]{ border:1px solid var(--line); border-radius:9px; padding:8px 10px; font-size:13px; font-family:inherit; background:rgba(255,255,255,.75); color:var(--ink); width:100%; }
+.gi-datefield input[type="date"]:focus{ outline:none; border-color:var(--amber); background:#fff; }
+.gi-hotel-maps{ display:inline-flex; align-items:center; gap:4px; margin-top:5px; font-size:11.5px; font-weight:600; color:var(--seaDeep); text-decoration:none; }
+.gi-addrow-top{ padding:12px 16px 6px; }
 .gi-edit-actions{ display:flex; justify-content:space-between; margin-top:3px; }
 .gi-del{ background:none; border:none; color:#B23A3A; font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer; font-weight:600; font-family:inherit; }
 .gi-save{ background:var(--ink); color:#fff; border:none; border-radius:9px; padding:7px 14px; font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer; font-weight:600; font-family:inherit; }
