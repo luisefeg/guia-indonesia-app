@@ -112,6 +112,19 @@ function ticketSortKey(t) {
 }
 function parseMin(s) { const m = (s || "").match(/(\d{1,2}):(\d{2})/); return m ? (+m[1]) * 60 + (+m[2]) : 9999; }
 
+// Convierte fechas antiguas en texto libre (ej. "27 jul") al formato real yyyy-mm-dd.
+// Necesario porque los tickets creados antes de tener selector de calendario se
+// guardaron como texto, y eso rompía el orden cronológico.
+function normalizeTicketDate(s) {
+  if (!s) return s;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s; // ya está en formato correcto
+  const m = s.trim().toLowerCase().match(/^(\d{1,2})\s*([a-z]{3})/);
+  if (!m) return s;
+  const day = +m[1]; const mo = MONTHS[m[2]];
+  if (mo === undefined) return s;
+  return `2026-${String(mo + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
 /* ============================================================
    ALMACENAMIENTO COMPARTIDO (Supabase)
    datos → tabla "guia_kv" (una fila por sección, en jsonb)
@@ -203,8 +216,11 @@ export default function GuiaIndonesia() {
       kvGet("notas", []),
       kvGet("hotels", HOTELS_DEFAULT),
     ]);
-    setTickets(t); setStops(s); setAgenda(a); setNotas(n); setHotels(h);
+    const tFixed = (t || []).map((x) => ({ ...x, date: normalizeTicketDate(x.date) }));
+    const hadLegacyDates = JSON.stringify(tFixed) !== JSON.stringify(t);
+    setTickets(tFixed); setStops(s); setAgenda(a); setNotas(n); setHotels(h);
     setLoading(false);
+    if (hadLegacyDates) kvSet("tickets", tFixed); // arregla los datos antiguos para todos, no solo en este móvil
   }, []);
   useEffect(() => { loadAll(); }, [loadAll]);
 
@@ -642,6 +658,8 @@ function TabTickets({ tickets, setTickets }) {
     return sorted;
   }, [tickets, filter, editId]);
 
+  const editingTicket = editId ? tickets.find((t) => t.id === editId) : null;
+
   return (
     <div>
       <div className="gi-pagehd"><h2 className="gi-pagehd-title">Tickets</h2><p className="gi-pagehd-sub">Billetes, entradas a templos, reservas… Filtra por día y adjunta PDFs o fotos.</p></div>
@@ -655,52 +673,57 @@ function TabTickets({ tickets, setTickets }) {
       <div className="gi-ticketlist">
         {shown.length === 0 && <div className="gi-acts-empty">No hay tickets para este día.</div>}
         {shown.map((t) => {
-          const Icon = MODE_ICON[t.mode] || Plane; const editing = editId === t.id; const isEntrada = t.mode === "entrada";
+          const Icon = MODE_ICON[t.mode] || Plane;
           return (
             <div key={t.id} className={"gi-ticket" + (t.status === "pendiente" ? " gi-ticket-pend" : "")}>
-              {!editing ? (
-                <>
-                  <div className="gi-ticket-row">
-                    <div className="gi-ticket-side"><span className="gi-ticket-icon"><Icon size={16} /></span><span className="gi-ticket-date">{fmtShortDate(t.date)}{t.time ? " · " + t.time : ""}</span></div>
-                    <div className="gi-ticket-main">
-                      <div className="gi-ticket-route">{t.from}{t.to ? <> <span className="gi-arrow">→</span> {t.to}</> : ""}</div>
-                      <div className="gi-ticket-op">{t.op}</div>
-                      <div className="gi-ticket-tags">
-                        <GroupTag g={t.group} />
-                        {t.code && <span className="gi-code">{t.code}</span>}
-                        {t.status === "pendiente" && <span className="gi-pendtag">Por reservar</span>}
-                        {t.note && <span className="gi-ticket-note">{t.note}</span>}
-                      </div>
-                    </div>
-                    <button className="gi-mini-btn" onClick={() => setEditId(t.id)}><Pencil size={15} /></button>
+              <div className="gi-ticket-row">
+                <div className="gi-ticket-side"><span className="gi-ticket-icon"><Icon size={16} /></span><span className="gi-ticket-date">{fmtShortDate(t.date)}{t.time ? " · " + t.time : ""}</span></div>
+                <div className="gi-ticket-main">
+                  <div className="gi-ticket-route">{t.from}{t.to ? <> <span className="gi-arrow">→</span> {t.to}</> : ""}</div>
+                  <div className="gi-ticket-op">{t.op}</div>
+                  <div className="gi-ticket-tags">
+                    <GroupTag g={t.group} />
+                    {t.code && <span className="gi-code">{t.code}</span>}
+                    {t.status === "pendiente" && <span className="gi-pendtag">Por reservar</span>}
+                    {t.note && <span className="gi-ticket-note">{t.note}</span>}
                   </div>
-                  <Attachments files={t.files} setFiles={(f) => update(t.id, { files: f })} />
-                </>
-              ) : (
-                <div className="gi-ticket-edit">
-                  <div className="gi-row2">
-                    <select value={t.mode} onChange={(e) => { const nm = e.target.value; update(t.id, nm === "entrada" ? { mode: nm, to: "" } : { mode: nm }); }}><option value="plane">Vuelo</option><option value="train">Tren</option><option value="ferry">Ferry</option><option value="bus">Bus/Traslado</option><option value="entrada">Entrada</option></select>
-                    <select value={t.group} onChange={(e) => update(t.id, { group: e.target.value })}><option value="todos">Todos</option><option value="A">Grupo A</option><option value="B">Grupo B</option></select>
-                  </div>
-                  <input placeholder="Operador / nombre" value={t.op} onChange={(e) => update(t.id, { op: e.target.value })} />
-                  {isEntrada ? (
-                    <input placeholder="Lugar (ej. Templo de Borobudur)" value={t.from} onChange={(e) => update(t.id, { from: e.target.value })} />
-                  ) : (
-                    <div className="gi-row2"><input placeholder="Origen" value={t.from} onChange={(e) => update(t.id, { from: e.target.value })} /><input placeholder="Destino" value={t.to} onChange={(e) => update(t.id, { to: e.target.value })} /></div>
-                  )}
-                  <div className="gi-row2">
-                    <label className="gi-datefield"><span>Fecha</span><input type="date" value={t.date} onChange={(e) => update(t.id, { date: e.target.value })} /></label>
-                    <input placeholder="Hora (ej. 09:30)" value={t.time} onChange={(e) => update(t.id, { time: e.target.value })} />
-                  </div>
-                  <div className="gi-row2"><input placeholder="Localizador" value={t.code} onChange={(e) => update(t.id, { code: e.target.value })} /><select value={t.status} onChange={(e) => update(t.id, { status: e.target.value })}><option value="confirmado">Confirmado</option><option value="pendiente">Por reservar</option></select></div>
-                  <input placeholder="Nota" value={t.note} onChange={(e) => update(t.id, { note: e.target.value })} />
-                  <div className="gi-edit-actions"><button className="gi-del" onClick={() => remove(t.id)}><Trash2 size={15} /> Eliminar</button><button className="gi-save" onClick={() => setEditId(null)}><Check size={15} /> Listo</button></div>
                 </div>
-              )}
+                <button className="gi-mini-btn" onClick={() => setEditId(t.id)}><Pencil size={15} /></button>
+              </div>
+              <Attachments files={t.files} setFiles={(f) => update(t.id, { files: f })} />
             </div>
           );
         })}
       </div>
+
+      {editingTicket && (
+        <div className="gi-modal" onClick={() => setEditId(null)}>
+          <div className="gi-modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="gi-modal-head"><span className="gi-modal-name">{editingTicket.mode === "entrada" ? "Entrada" : "Billete"}</span><button className="gi-modal-x" onClick={() => setEditId(null)}><X size={18} /></button></div>
+            <div className="gi-modal-formbody">
+              <div className="gi-ticket-edit">
+                <div className="gi-row2">
+                  <select value={editingTicket.mode} onChange={(e) => { const nm = e.target.value; update(editingTicket.id, nm === "entrada" ? { mode: nm, to: "" } : { mode: nm }); }}><option value="plane">Vuelo</option><option value="train">Tren</option><option value="ferry">Ferry</option><option value="bus">Bus/Traslado</option><option value="entrada">Entrada</option></select>
+                  <select value={editingTicket.group} onChange={(e) => update(editingTicket.id, { group: e.target.value })}><option value="todos">Todos</option><option value="A">Grupo A</option><option value="B">Grupo B</option></select>
+                </div>
+                <input placeholder="Operador / nombre" value={editingTicket.op} onChange={(e) => update(editingTicket.id, { op: e.target.value })} />
+                {editingTicket.mode === "entrada" ? (
+                  <input placeholder="Lugar (ej. Templo de Borobudur)" value={editingTicket.from} onChange={(e) => update(editingTicket.id, { from: e.target.value })} />
+                ) : (
+                  <div className="gi-row2"><input placeholder="Origen" value={editingTicket.from} onChange={(e) => update(editingTicket.id, { from: e.target.value })} /><input placeholder="Destino" value={editingTicket.to} onChange={(e) => update(editingTicket.id, { to: e.target.value })} /></div>
+                )}
+                <div className="gi-row2">
+                  <label className="gi-datefield"><span>Fecha</span><input type="date" value={editingTicket.date} onChange={(e) => update(editingTicket.id, { date: e.target.value })} /></label>
+                  <input placeholder="Hora (ej. 09:30)" value={editingTicket.time} onChange={(e) => update(editingTicket.id, { time: e.target.value })} />
+                </div>
+                <div className="gi-row2"><input placeholder="Localizador" value={editingTicket.code} onChange={(e) => update(editingTicket.id, { code: e.target.value })} /><select value={editingTicket.status} onChange={(e) => update(editingTicket.id, { status: e.target.value })}><option value="confirmado">Confirmado</option><option value="pendiente">Por reservar</option></select></div>
+                <input placeholder="Nota" value={editingTicket.note} onChange={(e) => update(editingTicket.id, { note: e.target.value })} />
+                <div className="gi-edit-actions"><button className="gi-del" onClick={() => remove(editingTicket.id)}><Trash2 size={15} /> Eliminar</button><button className="gi-save" onClick={() => setEditId(null)}><Check size={15} /> Listo</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -730,6 +753,8 @@ function TabHoteles({ hotels, setHotels }) {
     return sorted;
   }, [hotels, editId]);
 
+  const editingHotel = editId ? hotels.find((h) => h.id === editId) : null;
+
   return (
     <div>
       <div className="gi-pagehd"><h2 className="gi-pagehd-title">Hoteles</h2><p className="gi-pagehd-sub">Alojamientos del viaje: fechas y ubicación de cada uno.</p></div>
@@ -738,38 +763,44 @@ function TabHoteles({ hotels, setHotels }) {
       <div className="gi-ticketlist">
         {shown.length === 0 && <div className="gi-acts-empty">Aún no habéis añadido ningún hotel.</div>}
         {shown.map((h) => {
-          const editing = editId === h.id;
           const nights = nightsBetween(h.checkin, h.checkout);
           return (
             <div key={h.id} className="gi-ticket">
-              {!editing ? (
-                <div className="gi-ticket-row">
-                  <div className="gi-ticket-side"><span className="gi-ticket-icon"><Hotel size={16} /></span><span className="gi-ticket-date">{fmtShortDate(h.checkin)}{h.checkout ? " – " + fmtShortDate(h.checkout) : ""}</span></div>
-                  <div className="gi-ticket-main">
-                    <div className="gi-ticket-route">{h.name || "Hotel sin nombre"}</div>
-                    <div className="gi-ticket-op">{h.place}{nights ? " · " + nights : ""}</div>
-                    {h.location && <a className="gi-hotel-maps" href={mapsUrl(h.location)} target="_blank" rel="noreferrer"><MapPin size={12} /> Ver en el mapa <ExternalLink size={11} /></a>}
-                    {h.note && <div className="gi-ticket-tags"><span className="gi-ticket-note">{h.note}</span></div>}
-                  </div>
-                  <button className="gi-mini-btn" onClick={() => setEditId(h.id)}><Pencil size={15} /></button>
+              <div className="gi-ticket-row">
+                <div className="gi-ticket-side"><span className="gi-ticket-icon"><Hotel size={16} /></span><span className="gi-ticket-date">{fmtShortDate(h.checkin)}{h.checkout ? " – " + fmtShortDate(h.checkout) : ""}</span></div>
+                <div className="gi-ticket-main">
+                  <div className="gi-ticket-route">{h.name || "Hotel sin nombre"}</div>
+                  <div className="gi-ticket-op">{h.place}{nights ? " · " + nights : ""}</div>
+                  {h.location && <a className="gi-hotel-maps" href={mapsUrl(h.location)} target="_blank" rel="noreferrer"><MapPin size={12} /> Ver en el mapa <ExternalLink size={11} /></a>}
+                  {h.note && <div className="gi-ticket-tags"><span className="gi-ticket-note">{h.note}</span></div>}
                 </div>
-              ) : (
-                <div className="gi-ticket-edit">
-                  <input placeholder="Nombre del hotel" value={h.name} onChange={(e) => update(h.id, { name: e.target.value })} />
-                  <input placeholder="Ciudad o isla" value={h.place} onChange={(e) => update(h.id, { place: e.target.value })} />
-                  <div className="gi-row2">
-                    <label className="gi-datefield"><span>Entrada</span><input type="date" value={h.checkin} onChange={(e) => update(h.id, { checkin: e.target.value })} /></label>
-                    <label className="gi-datefield"><span>Salida</span><input type="date" value={h.checkout} onChange={(e) => update(h.id, { checkout: e.target.value })} /></label>
-                  </div>
-                  <input placeholder="Ubicación (para abrir en Google Maps)" value={h.location} onChange={(e) => update(h.id, { location: e.target.value })} />
-                  <input placeholder="Nota (opcional)" value={h.note} onChange={(e) => update(h.id, { note: e.target.value })} />
-                  <div className="gi-edit-actions"><button className="gi-del" onClick={() => remove(h.id)}><Trash2 size={15} /> Eliminar</button><button className="gi-save" onClick={() => setEditId(null)}><Check size={15} /> Listo</button></div>
-                </div>
-              )}
+                <button className="gi-mini-btn" onClick={() => setEditId(h.id)}><Pencil size={15} /></button>
+              </div>
             </div>
           );
         })}
       </div>
+
+      {editingHotel && (
+        <div className="gi-modal" onClick={() => setEditId(null)}>
+          <div className="gi-modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="gi-modal-head"><span className="gi-modal-name">Hotel</span><button className="gi-modal-x" onClick={() => setEditId(null)}><X size={18} /></button></div>
+            <div className="gi-modal-formbody">
+              <div className="gi-ticket-edit">
+                <input placeholder="Nombre del hotel" value={editingHotel.name} onChange={(e) => update(editingHotel.id, { name: e.target.value })} />
+                <input placeholder="Ciudad o isla" value={editingHotel.place} onChange={(e) => update(editingHotel.id, { place: e.target.value })} />
+                <div className="gi-row2">
+                  <label className="gi-datefield"><span>Entrada</span><input type="date" value={editingHotel.checkin} onChange={(e) => update(editingHotel.id, { checkin: e.target.value })} /></label>
+                  <label className="gi-datefield"><span>Salida</span><input type="date" value={editingHotel.checkout} onChange={(e) => update(editingHotel.id, { checkout: e.target.value })} /></label>
+                </div>
+                <input placeholder="Ubicación (para abrir en Google Maps)" value={editingHotel.location} onChange={(e) => update(editingHotel.id, { location: e.target.value })} />
+                <input placeholder="Nota (opcional)" value={editingHotel.note} onChange={(e) => update(editingHotel.id, { note: e.target.value })} />
+                <div className="gi-edit-actions"><button className="gi-del" onClick={() => remove(editingHotel.id)}><Trash2 size={15} /> Eliminar</button><button className="gi-save" onClick={() => setEditId(null)}><Check size={15} /> Listo</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1089,6 +1120,7 @@ const CSS = `
 .gi-datefield input[type="date"]:focus{ outline:none; border-color:var(--amber); background:#fff; }
 .gi-hotel-maps{ display:inline-flex; align-items:center; gap:4px; margin-top:5px; font-size:11.5px; font-weight:600; color:var(--seaDeep); text-decoration:none; }
 .gi-addrow-top{ padding:12px 16px 6px; }
+.gi-tfilter{ margin-top:6px; }
 .gi-edit-actions{ display:flex; justify-content:space-between; margin-top:3px; }
 .gi-del{ background:none; border:none; color:#B23A3A; font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer; font-weight:600; font-family:inherit; }
 .gi-save{ background:var(--ink); color:#fff; border:none; border-radius:9px; padding:7px 14px; font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer; font-weight:600; font-family:inherit; }
@@ -1108,6 +1140,7 @@ const CSS = `
 .gi-modal-name{ font-size:13.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .gi-modal-x{ background:none; border:none; cursor:pointer; color:var(--ink-soft); }
 .gi-modal-body{ flex:1; overflow:auto; background:#f1ece2; display:flex; align-items:center; justify-content:center; min-height:200px; }
+.gi-modal-formbody{ flex:1; overflow:auto; background:#fff; padding:15px; }
 .gi-modal-img{ max-width:100%; max-height:80vh; display:block; border-radius:10px; }
 .gi-modal-frame2{ width:100%; height:70vh; border:none; background:#fff; }
 .gi-modal-dl{ display:flex; align-items:center; justify-content:center; gap:7px; padding:13px; font-size:13.5px; font-weight:600; color:var(--seaDeep); text-decoration:none; border-top:1px solid var(--line); }
