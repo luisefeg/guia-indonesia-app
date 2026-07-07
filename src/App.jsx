@@ -322,6 +322,16 @@ function TodayCard({ agenda, tickets, goAgenda }) {
                   <div key={t.id} className="gi-today-ticket">
                     <Icon size={13} />
                     <span className="gi-today-ticket-t">{t.time ? t.time + " · " : ""}{t.from}{t.to ? " → " + t.to : ""}</span>
+                    {t.files && t.files.length > 0 && (
+                      <button
+                        type="button"
+                        className="gi-today-ticket-file"
+                        title={t.files[0].name}
+                        onClick={() => window.open(t.files[0].url, "_blank", "noopener,noreferrer")}
+                      >
+                        <Paperclip size={11} />{t.files.length > 1 ? t.files.length : ""}
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -520,7 +530,11 @@ function Attachments({ files, setFiles, accent = "var(--sea)" }) {
     }
     setFiles([...(files || []), ...metas]); setBusy(false);
   };
-  const open = (a) => setViewer(a);
+  const open = (a) => {
+    const isImg = (a.type || "").startsWith("image");
+    if (isImg) setViewer(a);
+    else window.open(a.url, "_blank", "noopener,noreferrer");
+  };
   const del = async (a) => { await deleteFileByPath(a.path); setFiles((files || []).filter((x) => x.path !== a.path)); };
   return (
     <div className="gi-attach">
@@ -543,12 +557,11 @@ function Attachments({ files, setFiles, accent = "var(--sea)" }) {
 }
 
 function FileViewer({ file, onClose }) {
-  const isImg = (file.type || "").startsWith("image");
   return (
     <div className="gi-modal" onClick={onClose}>
       <div className="gi-modal-box" onClick={(e) => e.stopPropagation()}>
         <div className="gi-modal-head"><span className="gi-modal-name">{file.name}</span><button className="gi-modal-x" onClick={onClose}><X size={18} /></button></div>
-        <div className="gi-modal-body">{isImg ? <img src={file.url} alt={file.name} className="gi-modal-img" /> : <iframe title={file.name} src={file.url} className="gi-modal-frame2" />}</div>
+        <div className="gi-modal-body"><img src={file.url} alt={file.name} className="gi-modal-img" /></div>
         <a className="gi-modal-dl" href={file.url} download={file.name} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Abrir / descargar</a>
       </div>
     </div>
@@ -713,19 +726,34 @@ function TabNotas({ notas, setNotas, onSync }) {
     if (up) setPending({ url: up.url, path: up.path, type: "image" });
   };
 
+  const pickAudioMime = () => {
+    if (typeof MediaRecorder === "undefined" || !MediaRecorder.isTypeSupported) return "";
+    const candidates = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm", "audio/aac", "audio/ogg"];
+    for (const c of candidates) { try { if (MediaRecorder.isTypeSupported(c)) return c; } catch { /* noop */ } }
+    return "";
+  };
+
   const startRec = async () => {
+    if (typeof MediaRecorder === "undefined") { alert("Este navegador no permite grabar audio. Prueba a actualizar Safari o usa Chrome."); return; }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-      const mr = new MediaRecorder(stream);
+      const mime = pickAudioMime();
+      const mr = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
       chunksRef.current = [];
       mr.ondataavailable = (e) => { if (e.data && e.data.size) chunksRef.current.push(e.data); };
       mr.onstop = async () => {
-        const blob = new Blob(chunksRef.current, { type: mr.mimeType || "audio/webm" });
-        const file = new File([blob], `audio-${Date.now()}.webm`, { type: blob.type || "audio/webm" });
-        const up = await uploadFile(file, "notas");
-        if (up) setPending({ url: up.url, path: up.path, type: "audio" });
         if (streamRef.current) streamRef.current.getTracks().forEach((t) => t.stop());
+        if (!chunksRef.current.length) { alert("No se ha grabado nada. Mantén pulsado un poco más e inténtalo de nuevo."); return; }
+        const type = mr.mimeType || mime || "audio/webm";
+        const ext = type.includes("mp4") ? "m4a" : type.includes("ogg") ? "ogg" : type.includes("webm") ? "webm" : "audio";
+        const blob = new Blob(chunksRef.current, { type });
+        const file = new File([blob], `audio-${Date.now()}.${ext}`, { type });
+        setBusy(true);
+        const up = await uploadFile(file, "notas");
+        setBusy(false);
+        if (up) setPending({ url: up.url, path: up.path, type: "audio" });
+        else alert("No se ha podido subir el audio. Comprueba la conexión e inténtalo de nuevo.");
       };
       mr.start(); recRef.current = mr; setRecording(true);
     } catch (err) { alert("No se pudo acceder al micrófono: " + err.message); }
@@ -841,6 +869,7 @@ const CSS = `
 .gi-today-tickets{ margin-top:11px; display:flex; flex-direction:column; gap:5px; padding:9px 11px; background:var(--seaSoft); border-radius:11px; }
 .gi-today-ticket{ display:flex; align-items:center; gap:7px; font-size:12px; color:var(--seaDeep); }
 .gi-today-ticket-t{ font-weight:600; }
+.gi-today-ticket-file{ margin-left:auto; display:inline-flex; align-items:center; gap:2px; background:rgba(255,255,255,.7); border:1px solid var(--seaDeep); color:var(--seaDeep); border-radius:20px; padding:2px 7px; font-size:10.5px; font-weight:700; cursor:pointer; font-family:inherit; }
 .gi-today-acts{ margin-top:11px; display:flex; flex-direction:column; gap:5px; }
 .gi-today-act{ display:flex; gap:9px; align-items:baseline; }
 .gi-today-time{ font-size:11px; font-weight:700; color:var(--amberDeep); min-width:38px; }
